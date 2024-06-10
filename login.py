@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import messagebox
 from db_connection import get_db_connection
 import datetime
+from owner_dashboard import OwnerDashboard
 
 class LoginApp:
     def __init__(self, root):
@@ -16,6 +17,7 @@ class LoginApp:
         self.setup_login()
 
     def setup_login(self):
+        self.register_frame.pack_forget()
         self.login_frame.pack(expand=True)
 
         tk.Label(self.login_frame, text="Username").grid(row=0, column=0, pady=5)
@@ -51,6 +53,7 @@ class LoginApp:
     def login(self):
         username = self.username.get()
         password = self.password.get()
+        role = self.role.get()
 
         # Validate user from the database
         conn = get_db_connection()
@@ -65,8 +68,11 @@ class LoginApp:
             user_name = user[1]
             messagebox.showinfo("Login Successful", f"Welcome {user_name}!")
             # Based on role, redirect to appropriate dashboard (Customer, Employee, Owner)
-        else:
-            messagebox.showerror("Login Failed", "Invalid username or password")
+            if role == "Owner":
+                self.login_frame.pack_forget()
+                OwnerDashboard(self.root, user_id)
+            else:
+                messagebox.showerror("Login Failed", "Invalid username or password")
 
     def setup_register(self):
         self.login_frame.pack_forget()
@@ -103,8 +109,11 @@ class LoginApp:
 
         self.display_additional_fields("Customer")
 
-        tk.Button(self.register_frame, text="Sign Up", command=self.register).grid(row=7, column=0, columnspan=2, pady=5)
-
+        button_frame = tk.Frame(self.register_frame)
+        button_frame.grid(row=7, column=0, columnspan=2, pady=10)
+        tk.Button(button_frame, text="Sign Up", command=self.register, font=('Arial', 10), width=10).pack(side=tk.LEFT, padx=5)
+        tk.Button(button_frame, text="Login", command=self.setup_login, font=('Arial', 10), width=10).pack(side=tk.RIGHT, padx=5)
+        
         self.register_frame.grid_columnconfigure(0, weight=1)
         self.register_frame.grid_columnconfigure(1, weight=1)
 
